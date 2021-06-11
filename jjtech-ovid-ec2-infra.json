@@ -1,0 +1,118 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+    },
+    "Parameters": {
+      "EnvironmentName": {
+        "Description": "Environment Name",
+        "Type": "String",
+        "AllowedValues": [
+          "Dev",
+          "PreProd",
+          "Prod"
+        ],
+        "ConstraintDescription": "Environment must match with specified AllowedValue"
+      },
+      "jjtechWebServerAZ": {
+          "Description": "Select an AZ forjjtechWebServer",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+
+      "jjtechWebServerInstanceType": {
+          "Description": "Provide Instance type for WebServer",
+          "Type": "String",
+          "AllowedValues": [
+            "t2.micro",
+            "t2.nano",
+            "t2.small",
+            "t1.micro"
+          ],
+          "ConstraintDescription": "WebServer Instance type must match with specified AllowedValue"
+      },
+      "jjtechWebServerKeyPair": {
+          "Description": "Provide KeyPair Name for WebServer",
+          "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+      "jjtechAppServerAZ": {
+          "Description": "Select an AZ forjjtechAppServer",
+          "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "jjtechAppServerInstanceType": {
+          "Description": "AppServer EC2 instance type (has default, AllowedValues)",
+          "Type": "String",
+          "AllowedValues": [
+            "t2.micro",
+            "t2.nano",
+            "t2.small",
+            "t1.micro"
+          ],
+          "ConstraintDescription": "AppServer Instance type must match with specified AllowedValue"
+      },
+      "jjtechAppServerKeyPair": {
+          "Description": "Provide KeyPair Name for AppServer",
+          "Type": "AWS::EC2::KeyPair::KeyName"
+      }
+    },
+    "Mappings": {
+      "OvidRegionForAMI": {
+                "us-east-1": {
+                  "AMIID": "ami-0d5eff06f840b45e9"
+                },
+                "us-east-2": {
+                  "AMIID": "ami-077e31c4939f6a2f3"
+                },
+                "us-west-1": {
+                  "AMIID": "ami-04468e03c37242e1e"
+                },
+                "us-west-2": {
+                  "AMIID": "ami-0cf6f5c8a62fa5da6"
+                }
+      }
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "jjtechWebServer": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "jjtechWebServerAZ" },
+          "ImageId": { "Fn::FindInMap": [
+              "OvidRegionForAMI",
+              { "Ref": "AWS::Region" },
+              "AMIID"
+          ] },
+          "InstanceType": { "Ref": "jjtechWebServerInstanceType" },
+          "KeyName" : { "Ref": "jjtechWebServerKeyPair" },
+          "NetworkInterfaces": [ {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [ { "Fn::ImportValue": "OVIDAppServerSecurityGroup" } ],
+            "SubnetId": { "Fn::ImportValue": "OvidApplicationWebserverPubSubnetID" }
+          } ],
+          "Tags" : [ { "Key": "Name", "Value":  "jjtechWebServer" }]
+        }
+      },
+      "jjtechAppServer": {
+        "Type": "AWS::EC2::Instance",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "jjtechAppServerAZ" },
+          "ImageId": { "Fn::FindInMap": [
+              "OvidRegionForAMI",
+              { "Ref": "AWS::Region" },
+              "AMIID"
+          ] },
+          "InstanceType": { "Ref": "jjtechAppServerInstanceType" },
+          "KeyName" : { "Ref": "jjtechAppServerKeyPair" },
+          "SubnetId" : { "Fn::ImportValue": "OvidApplicationAppServersPrivSubnetID" },
+          "SecurityGroupIds" : [ { "Fn::ImportValue": "OVIDAppServerSecurityGroup" } ],
+          "Tags" : [ { "Key": "Name", "Value":  "jjtechAppServer" } ]
+        }
+      }
+    },
+    "Outputs": {
+
+    }
+}

@@ -1,0 +1,163 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+
+    },
+    "Parameters": {
+      "chiatechWebServerSGingressToPortForSSH": {
+          "Description": "Provide Security Group SSH Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "22"
+      },
+      "chiatechWebServerSGingressFromPortForSSH": {
+          "Description": "Provide Security Group Ingress SSH Rule FromPort",
+          "Type": "String",
+          "Default": "22"
+      },
+      "chiatechWebServerSGsourceIPforSSH": {
+          "Description": "Provide Source IP for chiatechWebServerSG SSH Ingress Rules",
+          "Type": "String",
+          "Default": "0.0.0.0/0"
+      },
+      "chiatechWebServerSGingressToPortForHTTP": {
+          "Description": "Provide Security Group HTTP Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "80"
+      },
+      "chiatechWebServerSGingressFromPortForHTTP": {
+          "Description": "Provide Security Group HTTP Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "80"
+      },
+      "chiatechWebServerSGsourceIPforHTTP": {
+          "Description": "Provide Source IP for chiatechWebServerSG HTTP Ingress Rules",
+          "Type": "String",
+          "Default": "0.0.0.0/0"
+      },
+      "chiatechWebServerSGingressToPortForHTTPS": {
+          "Description": "Provide Security Group HTTPS Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "443"
+      },
+      "chiatechWebServerSGingressFromPortForHTTPS": {
+          "Description": "Provide Security Group HTTPS Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "443"
+      },
+      "chiatechWebServerSGsourceIPforHTTPS": {
+          "Description": "Provide Source IP for chiatechWebServerSG HTTPS Ingress Rules",
+          "Type": "String",
+          "Default": "0.0.0.0/0"
+      },
+      "chiatechAppServerSGingressToPortForSSH": {
+          "Description": "Provide App Server Security Group SSH Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "22"
+      },
+      "chiatechAppServerSGingressFromPortForSSH": {
+          "Description": "Provide App Server Security Group SSH Ingress Rule FromPort",
+          "Type": "String",
+          "Default": "22"
+      },
+      "chiatechAppServerSGingressToPortForHTTP": {
+          "Description": "Provide App Server Security Group HTTP Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "80"
+      },
+      "chiatechAppServerSGingressFromPortForHTTP": {
+          "Description": "Provide App Server Security Group HTTP Ingress Rule FromPort",
+          "Type": "String",
+          "Default": "80"
+      },
+      "chiatechAppServerSGingressToPortForHTTPS": {
+          "Description": "Provide App Server Security Group HTTPS Ingress Rule ToPort",
+          "Type": "String",
+          "Default": "443"
+      },
+      "chiatechAppServerSGingressFromPortForHTTPS": {
+          "Description": "Provide App Server Security Group HTTPS Ingress Rule FromPort",
+          "Type": "String",
+          "Default": "443"
+      }
+
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "chiatechWebServerSG" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "chiatechWebServer Security group",
+          "SecurityGroupIngress" : [{
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref": "chiatechWebServerSGingressFromPortForSSH" },
+            "ToPort" : { "Ref": "chiatechWebServerSGingressToPortForSSH" },
+            "CidrIp" : { "Ref": "chiatechWebServerSGsourceIPforSSH" } },
+
+            {
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref": "chiatechWebServerSGingressFromPortForHTTP" },
+            "ToPort" : { "Ref": "chiatechWebServerSGingressToPortForHTTP" },
+            "CidrIp" : { "Ref": "chiatechWebServerSGsourceIPforHTTP" } },
+            {
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref": "chiatechWebServerSGingressFromPortForHTTPS" },
+            "ToPort" : { "Ref": "chiatechWebServerSGingressToPortForHTTPS" },
+            "CidrIp" : { "Ref": "chiatechWebServerSGsourceIPforHTTPS" } }
+
+            ],
+          "VpcId" : { "Fn::ImportValue": "OvidApplicationVPCID" },
+          "Tags" :  [ { "Key": "Name", "Value":  "chiatechWebServerSG" } ]
+        }
+      },
+      "chiatechAppServerSG" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "chiatechAppServer Security group",
+          "SecurityGroupIngress" : [
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : { "Ref": "chiatechAppServerSGingressFromPortForSSH" },
+              "ToPort" : { "Ref": "chiatechAppServerSGingressToPortForSSH" },
+              "SourceSecurityGroupId": { "Fn::GetAtt" : [ "chiatechWebServerSG", "GroupId" ]}},
+              {
+              "IpProtocol" : "tcp",
+              "FromPort" : { "Ref": "chiatechAppServerSGingressFromPortForHTTP" },
+              "ToPort" : { "Ref": "chiatechAppServerSGingressToPortForHTTP" },
+              "SourceSecurityGroupId": { "Fn::GetAtt" : [ "chiatechWebServerSG", "GroupId" ]} },
+
+              {
+              "IpProtocol" : "tcp",
+              "FromPort" : { "Ref": "chiatechAppServerSGingressFromPortForHTTPS" },
+              "ToPort" : { "Ref": "chiatechAppServerSGingressToPortForHTTPS" },
+              "SourceSecurityGroupId": { "Fn::GetAtt" : [ "chiatechWebServerSG", "GroupId" ]} }
+            ],
+          "VpcId" : { "Fn::ImportValue": "OvidApplicationVPCID" },
+          "Tags" :  [ { "Key": "Name", "Value":  "chiatechWebServerSG" } ]
+        }
+      }
+
+    },
+    "Outputs": {
+      "OVIDWebServerSecurityGroup": {
+        "Description": "The SSH Security Group for our Company",
+        "Value": { "Ref": "chiatechWebServerSG" },
+        "Export": {
+          "Name": "OVIDWebServerSecurityGroup"
+        }
+      },
+      "OVIDAppServerSecurityGroup": {
+        "Description": "The SSH Security Group for our Company",
+        "Value": { "Ref": "chiatechAppServerSG" },
+        "Export": {
+          "Name": "OVIDAppServerSecurityGroup"
+        }
+      }
+
+    }
+}
