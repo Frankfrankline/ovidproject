@@ -8,7 +8,7 @@
       "jjtechWebServerSGingressToPortForSSH": {
           "Description": "Provide Security Group SSH Ingress Rule ToPort",
           "Type": "String",
-          "Default": "22"
+          "Default": "20"
       },
       "jjtechWebServerSGingressFromPortForSSH": {
           "Description": "Provide Security Group Ingress SSH Rule FromPort",
